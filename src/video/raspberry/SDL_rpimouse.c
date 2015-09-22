@@ -221,6 +221,7 @@ RPI_WarpMouseGlobal(int x, int y)
 {
     RPI_CursorData *curdata;
     DISPMANX_UPDATE_HANDLE_T update;
+    int ret;
     VC_RECT_T dst_rect;
     VC_RECT_T src_rect;
     SDL_Mouse *mouse = SDL_GetMouse();
