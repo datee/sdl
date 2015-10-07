@@ -349,7 +349,7 @@ guess_device_class(struct udev_device *dev)
         } else if (test_bit(BTN_MOUSE, bitmask_key)) {
             devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
         } else if (test_bit(BTN_TOUCH, bitmask_key)) {
-            ; /* ID_INPUT_TOUCHSCREEN */
+            devclass |= SDL_UDEV_DEVICE_TOUCHSCREEN; /* ID_INPUT_TOUCHSCREEN */
         }
 
         if (test_bit(BTN_TRIGGER, bitmask_key) ||
@@ -378,7 +378,7 @@ guess_device_class(struct udev_device *dev)
     keyboard_mask = 0xFFFFFFFE;
     if ((bitmask_key[0] & keyboard_mask) != 0)
         devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
-
+    printf("%i\n", devclass);
     return devclass;
 }
 
@@ -397,6 +397,7 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
     }
     
     subsystem = _this->udev_device_get_subsystem(dev);
+
     if (SDL_strcmp(subsystem, "sound") == 0) {
         devclass = SDL_UDEV_DEVICE_SOUND;
     } else if (SDL_strcmp(subsystem, "input") == 0) {
@@ -412,6 +413,12 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
             devclass |= SDL_UDEV_DEVICE_MOUSE;
         }
 
+        val = _this->udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN");
+        if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
+            devclass |= SDL_UDEV_DEVICE_TOUCHSCREEN;
+         //   printf("found %s\n", "SDL_UDEV_DEVICE_TOUCHSCREEN");
+
+        }
         /* The undocumented rule is:
            - All devices with keys get ID_INPUT_KEY
            - From this subset, if they have ESC, numbers, and Q to D, it also gets ID_INPUT_KEYBOARD
@@ -425,7 +432,7 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
 
         if (devclass == 0) {
             /* Fall back to old style input classes */
-            val = _this->udev_device_get_property_value(dev, "ID_CLASS");
+            val = _this->udev_device_get_property_value(dev, "ID_CLASS");    
             if (val != NULL) {
                 if (SDL_strcmp(val, "joystick") == 0) {
                     devclass = SDL_UDEV_DEVICE_JOYSTICK;
@@ -438,9 +445,12 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
                 }
             } else {
                 /* We could be linked with libudev on a system that doesn't have udev running */
+
                 devclass = guess_device_class(dev);
             }
         }
+
+        //printf("devclass %i\n", devclass);
     } else {
         return;
     }

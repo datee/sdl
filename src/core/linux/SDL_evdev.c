@@ -599,8 +599,11 @@ SDL_EVDEV_Poll(void)
             for (i = 0; i < len; ++i) {
                 switch (events[i].type) {
                 case EV_KEY:
-                    if (events[i].code >= BTN_MOUSE && events[i].code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
+                    if (events[i].code >= BTN_MOUSE && events[i].code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons) || events[i].code==330) {
                         mouse_button = events[i].code - BTN_MOUSE;
+                        // hack to see button with code 330 from the rapsi touch display as mousebutton 1;
+                        if(events[i].code==330) mouse_button = 0;
+                        //
                         if (events[i].value == 0) {
                             SDL_SendMouseButton(mouse->focus, mouse->mouseID, SDL_RELEASED, EVDEV_MouseButtons[mouse_button]);
                         } else if (events[i].value == 1) {
@@ -691,12 +694,12 @@ SDL_EVDEV_Poll(void)
                     break;
                 case EV_SYN:
                     switch (events[i].code) {
-                    case SYN_DROPPED:
-                        SDL_EVDEV_sync_device(item);
-                        break;
-                    default:
-                        break;
-                    }
+                        case SYN_DROPPED:
+                            SDL_EVDEV_sync_device(item);
+                            break;
+                        default:
+                            break;
+                        }
                     break;
                 }
             }
