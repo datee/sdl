@@ -350,6 +350,7 @@ guess_device_class(struct udev_device *dev)
             devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
         } else if (test_bit(BTN_TOUCH, bitmask_key)) {
             ; /* ID_INPUT_TOUCHSCREEN */
+            devclass |= SDL_UDEV_DEVICE_TOUCH;
         }
 
         if (test_bit(BTN_TRIGGER, bitmask_key) ||
